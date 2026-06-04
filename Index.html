@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DTR System</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+  body { background: #f0f2f5; color: #222; min-height: 100vh; }
+  header {
+    background: #1f3a93; color: white; padding: 15px 25px;
+    display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  header h1 { font-size: 20px; }
+  header button {
+    background: #e74c3c; color: white; border: none;
+    padding: 8px 14px; border-radius: 5px; cursor: pointer;
+  }
+  header button:hover { background: #c0392b; }
+
+  .container { max-width: 1100px; margin: 30px auto; padding: 20px; }
+  .card {
+    background: white; padding: 25px; border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 20px;
+  }
+  h2 { margin-bottom: 15px; color: #1f3a93; }
+  h3 { margin: 15px 0 10px; color: #333; }
+
+  input, select {
+    width: 100%; padding: 10px; margin: 6px 0 12px;
+    border: 1px solid #ccc; border-radius: 5px; font-size: 14px;
+  }
+  button.primary {
+    background: #1f3a93; color: white; border: none;
+    padding: 10px 18px; border-radius: 5px; cursor: pointer; font-size: 14px;
+    margin-right: 5px;
+  }
+  button.primary:hover { background: #16306f; }
+  button.success { background: #27ae60; }
+  button.success:hover { background: #1e8449; }
+  button.warn { background: #f39c12; }
+  button.warn:hover { background: #d68910; }
+  button.danger { background: #e74c3c; }
+  button.danger:hover { background: #c0392b; }
+
+  .login-box { max-width: 400px; margin: 80px auto; }
+  .switch-link { text-align: center; margin-top: 10px; font-size: 14px; }
+  .switch-link a { color: #1f3a93; cursor: pointer; text-decoration: underline; }
+
+  table {
+    width: 100%; border-collapse: collapse; margin-top: 10px;
+    background: white;
+  }
+  th, td { padding: 10px; border: 1px solid #ddd; text-align: center; font-size: 14px; }
+  th { background: #1f3a93; color: white; }
+  tr:nth-child(even) { background: #f9f9f9; }
+
+  .stats {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px; margin-bottom: 20px;
+  }
+  .stat-box {
+    background: #1f3a93; color: white; padding: 18px;
+    border-radius: 8px; text-align: center;
+  }
+  .stat-box h4 { font-size: 13px; opacity: 0.85; margin-bottom: 6px; }
+  .stat-box p { font-size: 22px; font-weight: bold; }
+
+  .hidden { display: none; }
+  .actions button { padding: 5px 9px; font-size: 12px; margin: 2px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; }
+  .row > div { flex: 1; min-width: 150px; }
+  .alert {
+    padding: 10px; border-radius: 5px; margin-bottom: 10px;
+    background: #ffeaa7; color: #6c5500; font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN / REGISTER -->
+<div id="authPage">
+  <div class="container">
+    <div class="card login-box">
+      <h2 id="authTitle">Login to DTR</h2>
+      <div id="authAlert"></div>
+      <input type="text" id="authUser" placeholder="Username" />
+      <input type="password" id="authPass" placeholder="Password" />
+      <button class="primary" style="width:100%" onclick="handleAuth()">
+        <span id="authBtnText">Login</span>
+      </button>
+      <div class="switch-link">
+        <span id="switchText">No account?</span>
+        <a onclick="toggleAuth()" id="switchLink">Register here</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="appPage" class="hidden">
+  <header>
+    <h1>📋 DTR System — <span id="roleLabel"></span></h1>
+    <div>
+      <span id="welcomeLabel" style="margin-right:15px;"></span>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- USER DASHBOARD -->
+    <div id="userDashboard" class="hidden">
+      <div class="card">
+        <h2>⏱ Time Clock</h2>
+        <p style="margin-bottom:10px;">Rate: <b>$2/hr</b> • Shift: <b>6 paid hrs + 1 hr unpaid break</b></p>
+        <p id="clockStatus" style="margin-bottom:15px;color:#555;"></p>
+        <button class="primary success" onclick="clockIn()">Clock In</button>
+        <button class="primary warn" onclick="startBreak()">Start Break</button>
+        <button class="primary warn" onclick="endBreak()">End Break</button>
+        <button class="primary danger" onclick="clockOut()">Clock Out</button>
+      </div>
+
+      <div class="card">
+        <h2>📊 My Summary</h2>
+        <div class="stats">
+          <div class="stat-box"><h4>Total Days</h4><p id="uDays">0</p></div>
+          <div class="stat-box"><h4>Total Hours</h4><p id="uHours">0</p></div>
+          <div class="stat-box"><h4>Total Pay</h4><p id="uPay">$0.00</p></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>📅 My Records</h2>
+        <div id="userRecords"></div>
+      </div>
+    </div>
+
+    <!-- ADMIN DASHBOARD -->
+    <div id="adminDashboard" class="hidden">
+      <div class="card">
+        <h2>📈 Overview</h2>
+        <div class="stats">
+          <div class="stat-box"><h4>Total Users</h4><p id="aUsers">0</p></div>
+          <div class="stat-box"><h4>Total Records</h4><p id="aRecords">0</p></div>
+          <div class="stat-box"><h4>Total Hours</h4><p id="aHours">0</p></div>
+          <div class="stat-box"><h4>Total Payroll</h4><p id="aPay">$0.00</p></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>👥 Manage Users</h2>
+        <div class="row">
+          <div><input type="text" id="newUserName" placeholder="Username" /></div>
+          <div><input type="password" id="newUserPass" placeholder="Password" /></div>
+          <div>
+            <select id="newUserRole">
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div><button class="primary" onclick="addUser()">Add User</button></div>
+        </div>
+        <div id="userList"></div>
+      </div>
+
+      <div class="card">
+        <h2>🗂 All DTR Records</h2>
+        <div class="row" style="margin-bottom:10px;">
+          <div>
+            <select id="filterUser" onchange="renderAdminRecords()">
+              <option value="">All Users</option>
+            </select>
+          </div>
+        </div>
+        <div id="adminRecords"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ---------- STORAGE HELPERS ---------- */
+const RATE = 2;
+const PAID_HOURS_CAP = 6;     // max paid hours per day
+const BREAK_DEDUCT = 1;       // 1 hour unpaid break
+
+function getUsers() { return JSON.parse(localStorage.getItem('dtr_users') || '[]'); }
+function setUsers(u) { localStorage.setItem('dtr_users', JSON.stringify(u)); }
+function getRecords() { return JSON.parse(localStorage.getItem('dtr_records') || '[]'); }
+function setRecords(r) { localStorage.setItem('dtr_records', JSON.stringify(r)); }
+function getSession() { return JSON.parse(localStorage.getItem('dtr_session') || 'null'); }
+function setSession(s) { localStorage.setItem('dtr_session', JSON.stringify(s)); }
+
+/* ---------- SEED ADMIN ---------- */
+(function init() {
+  const users = getUsers();
+  if (!users.find(u => u.username === 'admin')) {
+    users.push({ username: 'admin', password: 'admin123', role: 'admin' });
+    setUsers(users);
+  }
+  if (getSession()) showApp();
+})();
+
+/* ---------- AUTH ---------- */
+let isRegisterMode = false;
+function toggleAuth() {
+  isRegisterMode = !isRegisterMode;
+  document.getElementById('authTitle').innerText = isRegisterMode ? 'Register Account' : 'Login to DTR';
+  document.getElementById('authBtnText').innerText = isRegisterMode ? 'Register' : 'Login';
+  document.getElementById('switchText').innerText = isRegisterMode ? 'Already have an account?' : 'No account?';
+  document.getElementById('switchLink').innerText = isRegisterMode ? 'Login here' : 'Register here';
+  document.getElementById('authAlert').innerHTML = '';
+}
+
+function handleAuth() {
+  const user = document.getElementById('authUser').value.trim();
+  const pass = document.getElementById('authPass').value.trim();
+  const alertBox = document.getElementById('authAlert');
+
+  if (!user || !pass) {
+    alertBox.innerHTML = '<div class="alert">Please fill in both fields.</div>';
+    return;
+  }
+
+  const users = getUsers();
+  if (isRegisterMode) {
+    if (users.find(u => u.username === user)) {
+      alertBox.innerHTML = '<div class="alert">Username already exists.</div>';
+      return;
+    }
+    users.push({ username: user, password: pass, role: 'user' });
+    setUsers(users);
+    alertBox.innerHTML = '<div class="alert" style="background:#d4edda;color:#155724;">Registered! You can log in now.</div>';
+    toggleAuth();
+  } else {
+    const found = users.find(u => u.username === user && u.password === pass);
+    if (!found) {
+      alertBox.innerHTML = '<div class="alert">Invalid credentials.</div>';
+      return;
+    }
+    setSession({ username: found.username, role: found.role });
+    showApp();
+  }
+}
+
+function logout() {
+  localStorage.removeItem('dtr_session');
+  location.reload();
+}
+
+/* ---------- SHOW APP ---------- */
+function showApp() {
+  document.getElementById('authPage').classList.add('hidden');
+  document.getElementById('appPage').classList.remove('hidden');
+  const s = getSession();
+  document.getElementById('roleLabel').innerText = s.role === 'admin' ? 'Admin Panel' : 'User Panel';
+  document.getElementById('welcomeLabel').innerText = 'Hi, ' + s.username;
+
+  if (s.role === 'admin') {
+    document.getElementById('adminDashboard').classList.remove('hidden');
+    renderAdmin();
+  } else {
+    document.getElementById('userDashboard').classList.remove('hidden');
+    renderUser();
+  }
+}
+
+/* ---------- TIME CALC ---------- */
+function calcHoursAndPay(rec) {
+  if (!rec.clockIn || !rec.clockOut) return { hours: 0, pay: 0 };
+  let ms = new Date(rec.clockOut) - new Date(rec.clockIn);
+  // subtract break time if recorded, else default 1 hr if total >= 7 hrs
+  let breakMs = 0;
+  if (rec.breakStart && rec.breakEnd) {
+    breakMs = new Date(rec.breakEnd) - new Date(rec.breakStart);
+  } else {
+    breakMs = BREAK_DEDUCT * 3600 * 1000; // auto-deduct 1 hr
+  }
+  let workedMs = ms - breakMs;
+  if (workedMs < 0) workedMs = 0;
+  let hours = workedMs / 3600000;
+  // cap paid hours at 6 per shift
+  let paidHours = Math.min(hours, PAID_HOURS_CAP);
+  let pay = paidHours * RATE;
+  return { hours: hours.toFixed(2), paidHours: paidHours.toFixed(2), pay: pay.toFixed(2) };
+}
+
+function fmt(d) {
+  if (!d) return '-';
+  return new Date(d).toLocaleString();
+}
+
+/* ---------- USER FUNCTIONS ---------- */
+function getTodayRecord() {
+  const s = getSession();
+  const today = new Date().toISOString().split('T')[0];
+  const records = getRecords();
+  return records.find(r => r.username === s.username && r.date === today);
+}
+
+function clockIn() {
+  const s = getSession();
+  const today = new Date().toISOString().split('T')[0];
+  const records = getRecords();
+  let rec = records.find(r => r.username === s.username && r.date === today);
+  if (rec && rec.clockIn) { alert('Already clocked in today.'); return; }
+  if (!rec) {
+    rec = { id: Date.now(), username: s.username, date: today };
+    records.push(rec);
+  }
+  rec.clockIn = new Date().toISOString();
+  setRecords(records);
+  renderUser();
+}
+
+function startBreak() {
+  const rec = getTodayRecord();
+  if (!rec || !rec.clockIn) { alert('Clock in first.'); return; }
+  if (rec.breakStart) { alert('Break already started.'); return; }
+  const records = getRecords();
+  records.find(r => r.id === rec.id).breakStart = new Date().toISOString();
+  setRecords(records);
+  renderUser();
+}
+
+function endBreak() {
+  const rec = getTodayRecord();
+  if (!rec || !rec.breakStart) { alert('Start break first.'); return; }
+  if (rec.breakEnd) { alert('Break already ended.'); return; }
+  const records = getRecords();
+  records.find(r => r.id === rec.id).breakEnd = new Date().toISOString();
+  setRecords(records);
+  renderUser();
+}
+
+function clockOut() {
+  const rec = getTodayRecord();
+  if (!rec || !rec.clockIn) { alert('Clock in first.'); return; }
+  if (rec.clockOut) { alert('Already clocked out.'); return; }
+  const records = getRecords();
+  records.find(r => r.id === rec.id).clockOut = new Date().toISOString();
+  setRecords(records);
+  renderUser();
+}
+
+function renderUser() {
+  const s = getSession();
+  const records = getRecords().filter(r => r.username === s.username)
+                              .sort((a, b) => b.date.localeCompare(a.date));
+
+  // status
+  const today = getTodayRecord();
+  let status = 'Not clocked in today.';
+  if (today) {
+    if (today.clockOut) status = `✅ Clocked out at ${fmt(today.clockOut)}`;
+    else if (today.breakEnd) status = `▶ Back from break since ${fmt(today.breakEnd)}`;
+    else if (today.breakStart) status = `⏸ On break since ${fmt(today.breakStart)}`;
+    else if (today.clockIn) status = `🟢 Clocked in at ${fmt(today.clockIn)}`;
+  }
+  document.getElementById('clockStatus').innerText = status;
+
+  // summary
+  let totalH = 0, totalP = 0;
+  records.forEach(r => {
+    const c = calcHoursAndPay(r);
+    totalH += parseFloat(c.paidHours || 0);
+    totalP += parseFloat(c.pay || 0);
+  });
+  document.getElementById('uDays').innerText = records.length;
+  document.getElementById('uHours').innerText = totalH.toFixed(2);
+  document.getElementById('uPay').innerText = '$' + totalP.toFixed(2);
+
+  // table
+  let html = `<table><tr>
+    <th>Date</th><th>Clock In</th><th>Break Start</th><th>Break End</th>
+    <th>Clock Out</th><th>Paid Hours</th><th>Pay</th></tr>`;
+  if (records.length === 0) {
+    html += '<tr><td colspan="7">No records yet.</td></tr>';
+  } else {
+    records.forEach(r => {
+      const c = calcHoursAndPay(r);
+      html += `<tr>
+        <td>${r.date}</td>
+        <td>${fmt(r.clockIn)}</td>
+        <td>${fmt(r.breakStart)}</td>
+        <td>${fmt(r.breakEnd)}</td>
+        <td>${fmt(r.clockOut)}</td>
+        <td>${c.paidHours || '-'}</td>
+        <td>$${c.pay || '0.00'}</td>
+      </tr>`;
+    });
+  }
+  html += '</table>';
+  document.getElementById('userRecords').innerHTML = html;
+}
+
+/* ---------- ADMIN FUNCTIONS ---------- */
+function renderAdmin() {
+  const users = getUsers();
+  const records = getRecords();
+
+  // overview
+  let totalH = 0, totalP = 0;
+  records.forEach(r => {
+    const c = calcHoursAndPay(r);
+    totalH += parseFloat(c.paidHours || 0);
+    totalP += parseFloat(c.pay || 0);
+  });
+  document.getElementById('aUsers').innerText = users.length;
+  document.getElementById('aRecords').innerText = records.length;
+  document.getElementById('aHours').innerText = totalH.toFixed(2);
+  document.getElementById('aPay').innerText = '$' + totalP.toFixed(2);
+
+  // user list
+  let uHtml = `<table><tr><th>Username</th><th>Role</th><th>Password</th><th>Actions</th></tr>`;
+  users.forEach(u => {
+    uHtml += `<tr>
+      <td>${u.username}</td>
+      <td>${u.role}</td>
+      <td>${u.password}</td>
+      <td class="actions">
+        ${u.username !== 'admin' ? `<button class="primary danger" onclick="deleteUser('${u.username}')">Delete</button>` : '<i>protected</i>'}
+      </td>
+    </tr>`;
+  });
+  uHtml += '</table>';
+  document.getElementById('userList').innerHTML = uHtml;
+
+  // filter dropdown
+  const filter = document.getElementById('filterUser');
+  const current = filter.value;
+  filter.innerHTML = '<option value="">All Users</option>' +
+    users.map(u => `<option value="${u.username}">${u.username}</option>`).join('');
+  filter.value = current;
+
+  renderAdminRecords();
+}
+
+function renderAdminRecords() {
+  const filterVal = document.getElementById('filterUser').value;
+  let records = getRecords().sort((a, b) => b.date.localeCompare(a.date));
+  if (filterVal) records = records.filter(r => r.username === filterVal);
+
+  let html = `<table><tr>
+    <th>User</th><th>Date</th><th>Clock In</th><th>Break Start</th>
+    <th>Break End</th><th>Clock Out</th><th>Paid Hours</th><th>Pay</th><th>Actions</th></tr>`;
+  if (records.length === 0) {
+    html += '<tr><td colspan="9">No records.</td></tr>';
+  } else {
+    records.forEach(r => {
+      const c = calcHoursAndPay(r);
+      html += `<tr>
+        <td>${r.username}</td>
+        <td>${r.date}</td>
+        <td>${fmt(r.clockIn)}</td>
+        <td>${fmt(r.breakStart)}</td>
+        <td>${fmt(r.breakEnd)}</td>
+        <td>${fmt(r.clockOut)}</td>
+        <td>${c.paidHours || '-'}</td>
+        <td>$${c.pay || '0.00'}</td>
+        <td class="actions">
+          <button class="primary warn" onclick="editRecord(${r.id})">Edit</button>
+          <button class="primary danger" onclick="deleteRecord(${r.id})">Delete</button>
+        </td>
+      </tr>`;
+    });
+  }
+  html += '</table>';
+  document.getElementById('adminRecords').innerHTML = html;
+}
+
+function addUser() {
+  const u = document.getElementById('newUserName').value.trim();
+  const p = document.getElementById('newUserPass').value.trim();
+  const r = document.getElementById('newUserRole').value;
+  if (!u || !p) { alert('Fill all fields.'); return; }
+  const users = getUsers();
+  if (users.find(x => x.username === u)) { alert('Username taken.'); return; }
+  users.push({ username: u, password: p, role: r });
+  setUsers(users);
+  document.getElementById('newUserName').value = '';
+  document.getElementById('newUserPass').value = '';
+  renderAdmin();
+}
+
+function deleteUser(username) {
+  if (!confirm(`Delete user "${username}" and ALL their records?`)) return;
+  setUsers(getUsers().filter(u => u.username !== username));
+  setRecords(getRecords().filter(r => r.username !== username));
+  renderAdmin();
+}
+
+function deleteRecord(id) {
+  if (!confirm('Delete this record?')) return;
+  setRecords(getRecords().filter(r => r.id !== id));
+  renderAdmin();
+}
+
+function editRecord(id) {
+  const records = getRecords();
+  const rec = records.find(r => r.id === id);
+  if (!rec) return;
+
+  const ci = prompt('Clock In (YYYY-MM-DD HH:MM, blank to keep):', rec.clockIn ? new Date(rec.clockIn).toISOString().slice(0,16).replace('T',' ') : '');
+  if (ci !== null && ci.trim() !== '') rec.clockIn = new Date(ci.replace(' ','T')).toISOString();
+
+  const bs = prompt('Break Start (YYYY-MM-DD HH:MM, blank to keep, "x" to clear):', rec.breakStart ? new Date(rec.breakStart).toISOString().slice(0,16).replace('T',' ') : '');
+  if (bs !== null) {
+    if (bs.trim() === 'x') delete rec.breakStart;
+    else if (bs.trim() !== '') rec.breakStart = new Date(bs.replace(' ','T')).toISOString();
+  }
+
+  const be = prompt('Break End (YYYY-MM-DD HH:MM, blank to keep, "x" to clear):', rec.breakEnd ? new Date(rec.breakEnd).toISOString().slice(0,16).replace('T',' ') : '');
+  if (be !== null) {
+    if (be.trim() === 'x') delete rec.breakEnd;
+    else if (be.trim() !== '') rec.breakEnd = new Date(be.replace(' ','T')).toISOString();
+  }
+
+  const co = prompt('Clock Out (YYYY-MM-DD HH:MM, blank to keep, "x" to clear):', rec.clockOut ? new Date(rec.clockOut).toISOString().slice(0,16).replace('T',' ') : '');
+  if (co !== null) {
+    if (co.trim() === 'x') delete rec.clockOut;
+    else if (co.trim() !== '') rec.clockOut = new Date(co.replace(' ','T')).toISOString();
+  }
+
+  setRecords(records);
+  renderAdmin();
+}
+</script>
+</body>
+</html>
