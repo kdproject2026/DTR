@@ -2,98 +2,27 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>DTR</title>
 
     <!-- Browser Tab Logo -->
     <link rel="icon" type="image/png" href="favicon.png">
 
     <style>
-        * {
+        html, body {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-        }
-
-        html,
-        body {
-            width: 100%;
             height: 100%;
-            overflow: hidden;
-            font-family: Arial, sans-serif;
-            background: #ffffff;
-        }
-
-        .header {
-            height: 60px;
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            background: #24292f;
-            color: white;
-            font-size: 20px;
-            font-weight: 600;
-            box-shadow: 0 2px 8px rgba(0,0,0,.1);
-        }
-
-        .header img {
-            width: 32px;
-            height: 32px;
-            margin-right: 12px;
-            border-radius: 6px;
-        }
-
-        .container {
-            height: calc(100vh - 60px);
-            width: 100%;
         }
 
         iframe {
             width: 100%;
-            height: 100%;
+            height: 100vh;
             border: none;
-        }
-
-        .fallback {
-            display: none;
-            text-align: center;
-            padding: 40px;
-        }
-
-        .fallback a {
-            display: inline-block;
-            margin-top: 15px;
-            padding: 12px 20px;
-            background: #24292f;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
         }
     </style>
 </head>
 <body>
-
-    <div class="header">
-        <img src="favicon.png" alt="Logo">
-        DTR
-    </div>
-
-    <div class="container">
-        <iframe
-            src="https://script.google.com/macros/s/AKfycbxFxH8POwspmpOr1kRl_4hZLTG83AyMNx8CZo4wIS_WEQq0SRkuViLBeivDw9bh-W3L/exec"
-            title="DTR Sheet">
-        </iframe>
-
-        <div class="fallback">
-            <h2>Unable to display the application.</h2>
-            <p>Your browser may be blocking embedded content.</p>
-            <a href="https://script.google.com/macros/s/AKfycbxFxH8POwspmpOr1kRl_4hZLTG83AyMNx8CZo4wIS_WEQq0SRkuViLBeivDw9bh-W3L/exec" target="_blank">
-                Open DTR Sheet
-            </a>
-        </div>
-    </div>
-
+    <iframe src="https://script.google.com/macros/s/AKfycbxFxH8POwspmpOr1kRl_4hZLTG83AyMNx8CZo4wIS_WEQq0SRkuViLBeivDw9bh-W3L/exec"></iframe>
 </body>
 </html>
