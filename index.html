@@ -1,744 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>DTR System</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-  body { background: #f0f2f5; color: #222; min-height: 100vh; }
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  header {
-    background: #1f3a93; color: white; padding: 15px 25px;
-    display: flex; justify-content: space-between; align-items: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  }
-  header h1 { font-size: 20px; }
-  header button {
-    background: #e74c3c; color: white; border: none;
-    padding: 8px 14px; border-radius: 5px; cursor: pointer;
-  }
-  header button:hover { background: #c0392b; }
+    <title>DTR</title>
 
-  .container { max-width: 1100px; margin: 30px auto; padding: 0 20px 40px; }
-  .card {
-    background: white; padding: 25px; border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 20px;
-  }
-  h2 { margin-bottom: 15px; color: #1f3a93; }
+    <!-- Browser Tab Logo -->
+    <link rel="icon" type="image/png" href="favicon.png">
 
-  input, select {
-    width: 100%; padding: 10px; margin: 6px 0 12px;
-    border: 1px solid #ccc; border-radius: 5px; font-size: 14px;
-    background: #fff;
-  }
-  input:focus, select:focus { outline: 2px solid #1f3a93; border-color: transparent; }
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  button.primary {
-    background: #1f3a93; color: white; border: none;
-    padding: 10px 18px; border-radius: 5px; cursor: pointer; font-size: 14px;
-    margin-right: 5px; margin-bottom: 5px; transition: background 0.2s;
-  }
-  button.primary:hover { background: #16306f; }
-  button.success { background: #27ae60; }
-  button.success:hover { background: #1e8449; }
-  button.warn { background: #f39c12; }
-  button.warn:hover { background: #d68910; }
-  button.danger { background: #e74c3c; }
-  button.danger:hover { background: #c0392b; }
-  button:disabled { opacity: 0.4; cursor: not-allowed; }
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background: #ffffff;
+        }
 
-  .login-box { max-width: 420px; margin: 80px auto; }
-  .login-box h2 { text-align: center; margin-bottom: 20px; }
-  .switch-link { text-align: center; margin-top: 12px; font-size: 14px; }
-  .switch-link a { color: #1f3a93; cursor: pointer; text-decoration: underline; }
+        .header {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            background: #24292f;
+            color: white;
+            font-size: 20px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0,0,0,.1);
+        }
 
-  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
-  th, td { padding: 10px 8px; border: 1px solid #ddd; text-align: center; }
-  th { background: #1f3a93; color: white; white-space: nowrap; }
-  tr:nth-child(even) { background: #f9f9f9; }
-  tr:hover { background: #eef2fb; }
+        .header img {
+            width: 32px;
+            height: 32px;
+            margin-right: 12px;
+            border-radius: 6px;
+        }
 
-  .stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 15px; margin-bottom: 20px;
-  }
-  .stat-box {
-    background: #1f3a93; color: white; padding: 18px;
-    border-radius: 8px; text-align: center;
-  }
-  .stat-box h4 { font-size: 12px; opacity: 0.85; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .stat-box p { font-size: 24px; font-weight: bold; }
+        .container {
+            height: calc(100vh - 60px);
+            width: 100%;
+        }
 
-  .hidden { display: none !important; }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
 
-  .actions button { padding: 5px 10px; font-size: 12px; margin: 2px; }
+        .fallback {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
 
-  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
-  .row > div { flex: 1; min-width: 140px; }
-  .row label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 2px; color: #555; }
-
-  .alert {
-    padding: 12px 15px; border-radius: 6px; margin-bottom: 12px;
-    font-size: 14px; border-left: 4px solid;
-  }
-  .alert-warn { background: #fff8e1; color: #7d5a00; border-color: #f39c12; }
-  .alert-success { background: #eafaf1; color: #1e6636; border-color: #27ae60; }
-  .alert-error { background: #fdecea; color: #922b21; border-color: #e74c3c; }
-  .alert-info { background: #eaf1fb; color: #1a3a6e; border-color: #1f3a93; }
-
-  .status-bar {
-    padding: 12px 16px; border-radius: 8px;
-    background: #eaf1fb; color: #1a3a6e;
-    font-size: 15px; font-weight: 500;
-    margin-bottom: 18px; border-left: 4px solid #1f3a93;
-  }
-
-  .clock-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
-
-  /* Modal */
-  .modal-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.5);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 1000;
-  }
-  .modal {
-    background: white; border-radius: 10px;
-    padding: 30px; width: 100%; max-width: 460px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-  }
-  .modal h3 { margin-bottom: 18px; color: #1f3a93; font-size: 18px; }
-  .modal label { display: block; font-size: 13px; font-weight: 600; color: #555; margin-bottom: 2px; }
-  .modal input { margin-bottom: 14px; }
-  .modal-buttons { display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px; }
-
-  @media (max-width: 600px) {
-    header h1 { font-size: 15px; }
-    .container { padding: 0 10px 30px; }
-    .card { padding: 15px; }
-    table { font-size: 11px; }
-    th, td { padding: 6px 4px; }
-  }
-</style>
+        .fallback a {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 12px 20px;
+            background: #24292f;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+        }
+    </style>
 </head>
 <body>
 
-<!-- ===== AUTH PAGE ===== -->
-<div id="authPage">
-  <div class="container">
-    <div class="card login-box">
-      <h2 id="authTitle">🔐 Login to DTR</h2>
-      <div id="authAlert"></div>
-      <label for="authUser">Username</label>
-      <input type="text" id="authUser" placeholder="Enter username" autocomplete="username" />
-      <label for="authPass">Password</label>
-      <input type="password" id="authPass" placeholder="Enter password" autocomplete="current-password" />
-      <button class="primary" style="width:100%;padding:12px;font-size:15px;" onclick="handleAuth()">
-        <span id="authBtnText">Login</span>
-      </button>
-      <div class="switch-link">
-        <span id="switchText">No account?</span>
-        <a onclick="toggleAuth()" id="switchLink">Register here</a>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ===== MAIN APP ===== -->
-<div id="appPage" class="hidden">
-  <header>
-    <h1>📋 DTR System &mdash; <span id="roleLabel"></span></h1>
-    <div style="display:flex;align-items:center;gap:12px;">
-      <span id="welcomeLabel" style="font-size:14px;opacity:0.9;"></span>
-      <button onclick="logout()">Logout</button>
-    </div>
-  </header>
-
-  <div class="container">
-
-    <!-- USER DASHBOARD -->
-    <div id="userDashboard" class="hidden">
-
-      <div class="card">
-        <h2>⏱ Time Clock</h2>
-        <p style="margin-bottom:14px;color:#555;font-size:14px;">
-          Rate: <strong>$2.00 / hr</strong> &nbsp;|&nbsp; Max paid hours: <strong>6 hrs/shift</strong> &nbsp;|&nbsp; Break: <strong>1 hr unpaid</strong>
-        </p>
-        <div id="clockStatus" class="status-bar">Loading...</div>
-        <div class="clock-buttons">
-          <button class="primary success" id="btnClockIn"   onclick="clockIn()">🟢 Clock In</button>
-          <button class="primary warn"    id="btnStartBreak" onclick="startBreak()">⏸ Start Break</button>
-          <button class="primary warn"    id="btnEndBreak"   onclick="endBreak()">▶ End Break</button>
-          <button class="primary danger"  id="btnClockOut"  onclick="clockOut()">🔴 Clock Out</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>📊 My Summary</h2>
-        <div class="stats">
-          <div class="stat-box"><h4>Total Days</h4><p id="uDays">0</p></div>
-          <div class="stat-box"><h4>Paid Hours</h4><p id="uHours">0</p></div>
-          <div class="stat-box"><h4>Total Pay</h4><p id="uPay">$0.00</p></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>📅 My Records</h2>
-        <div id="userRecords"></div>
-      </div>
+    <div class="header">
+        <img src="favicon.png" alt="Logo">
+        DTR
     </div>
 
-    <!-- ADMIN DASHBOARD -->
-    <div id="adminDashboard" class="hidden">
+    <div class="container">
+        <iframe
+            src="https://script.google.com/macros/s/AKfycbxFxH8POwspmpOr1kRl_4hZLTG83AyMNx8CZo4wIS_WEQq0SRkuViLBeivDw9bh-W3L/exec"
+            title="DTR Sheet">
+        </iframe>
 
-      <div class="card">
-        <h2>📈 Overview</h2>
-        <div class="stats">
-          <div class="stat-box"><h4>Total Users</h4><p id="aUsers">0</p></div>
-          <div class="stat-box"><h4>Total Records</h4><p id="aRecords">0</p></div>
-          <div class="stat-box"><h4>Total Hours</h4><p id="aHours">0</p></div>
-          <div class="stat-box"><h4>Total Payroll</h4><p id="aPay">$0.00</p></div>
+        <div class="fallback">
+            <h2>Unable to display the application.</h2>
+            <p>Your browser may be blocking embedded content.</p>
+            <a href="https://script.google.com/macros/s/AKfycbxFxH8POwspmpOr1kRl_4hZLTG83AyMNx8CZo4wIS_WEQq0SRkuViLBeivDw9bh-W3L/exec" target="_blank">
+                Open DTR Sheet
+            </a>
         </div>
-      </div>
-
-      <div class="card">
-        <h2>👥 Manage Users</h2>
-        <div class="row">
-          <div>
-            <label>Username</label>
-            <input type="text" id="newUserName" placeholder="Username" />
-          </div>
-          <div>
-            <label>Password</label>
-            <input type="password" id="newUserPass" placeholder="Password" />
-          </div>
-          <div>
-            <label>Role</label>
-            <select id="newUserRole">
-              <option value="user">User</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
-          <div style="padding-bottom:12px;">
-            <button class="primary" onclick="addUser()">➕ Add User</button>
-          </div>
-        </div>
-        <div id="userList"></div>
-      </div>
-
-      <div class="card">
-        <h2>🗂 All DTR Records</h2>
-        <div class="row" style="margin-bottom:12px;">
-          <div style="max-width:250px;">
-            <label>Filter by User</label>
-            <select id="filterUser" onchange="renderAdminRecords()">
-              <option value="">All Users</option>
-            </select>
-          </div>
-        </div>
-        <div id="adminRecords"></div>
-      </div>
-
     </div>
-  </div>
-</div>
 
-<!-- ===== EDIT MODAL ===== -->
-<div id="editModal" class="modal-overlay hidden">
-  <div class="modal">
-    <h3>✏️ Edit DTR Record</h3>
-    <input type="hidden" id="editId" />
-    <label>Clock In (YYYY-MM-DD HH:MM)</label>
-    <input type="datetime-local" id="editClockIn" />
-    <label>Break Start (leave blank to clear)</label>
-    <input type="datetime-local" id="editBreakStart" />
-    <label>Break End (leave blank to clear)</label>
-    <input type="datetime-local" id="editBreakEnd" />
-    <label>Clock Out (leave blank to clear)</label>
-    <input type="datetime-local" id="editClockOut" />
-    <div class="modal-buttons">
-      <button class="primary danger" onclick="closeModal()">Cancel</button>
-      <button class="primary success" onclick="saveEdit()">Save Changes</button>
-    </div>
-  </div>
-</div>
-
-<script>
-/* ============================================================
-   CONSTANTS
-============================================================ */
-const RATE          = 2;
-const PAID_HOURS_CAP = 6;
-const BREAK_DEDUCT  = 1;
-
-/* ============================================================
-   STORAGE
-============================================================ */
-function getUsers()   { return JSON.parse(localStorage.getItem('dtr_users')   || '[]'); }
-function setUsers(u)  { localStorage.setItem('dtr_users',   JSON.stringify(u)); }
-function getRecords() { return JSON.parse(localStorage.getItem('dtr_records') || '[]'); }
-function setRecords(r){ localStorage.setItem('dtr_records', JSON.stringify(r)); }
-function getSession() { return JSON.parse(localStorage.getItem('dtr_session') || 'null'); }
-function setSession(s){ localStorage.setItem('dtr_session', JSON.stringify(s)); }
-
-/* ============================================================
-   INIT — seed admin & restore session
-============================================================ */
-(function init() {
-  const users = getUsers();
-  if (!users.find(u => u.username === 'admin')) {
-    users.push({ username: 'admin', password: 'admin123', role: 'admin' });
-    setUsers(users);
-  }
-  if (getSession()) showApp();
-})();
-
-/* ============================================================
-   AUTH
-============================================================ */
-let isRegisterMode = false;
-
-function toggleAuth() {
-  isRegisterMode = !isRegisterMode;
-  document.getElementById('authTitle').innerText    = isRegisterMode ? '📝 Register Account' : '🔐 Login to DTR';
-  document.getElementById('authBtnText').innerText  = isRegisterMode ? 'Register' : 'Login';
-  document.getElementById('switchText').innerText   = isRegisterMode ? 'Already have an account?' : 'No account?';
-  document.getElementById('switchLink').innerText   = isRegisterMode ? 'Login here' : 'Register here';
-  document.getElementById('authAlert').innerHTML    = '';
-}
-
-function showAlert(containerId, msg, type = 'warn') {
-  document.getElementById(containerId).innerHTML =
-    `<div class="alert alert-${type}">${msg}</div>`;
-}
-
-function handleAuth() {
-  const user = document.getElementById('authUser').value.trim();
-  const pass = document.getElementById('authPass').value;
-
-  if (!user || !pass) {
-    showAlert('authAlert', 'Please fill in both fields.', 'error');
-    return;
-  }
-
-  const users = getUsers();
-
-  if (isRegisterMode) {
-    if (users.find(u => u.username === user)) {
-      showAlert('authAlert', 'Username already exists. Choose another.', 'error');
-      return;
-    }
-    users.push({ username: user, password: pass, role: 'user' });
-    setUsers(users);
-    showAlert('authAlert', '✅ Registered successfully! You can log in now.', 'success');
-    toggleAuth();
-  } else {
-    const found = users.find(u => u.username === user && u.password === pass);
-    if (!found) {
-      showAlert('authAlert', 'Invalid username or password.', 'error');
-      return;
-    }
-    setSession({ username: found.username, role: found.role });
-    showApp();
-  }
-}
-
-// Allow pressing Enter to submit
-['authUser','authPass'].forEach(id => {
-  document.getElementById(id).addEventListener('keydown', e => {
-    if (e.key === 'Enter') handleAuth();
-  });
-});
-
-function logout() {
-  localStorage.removeItem('dtr_session');
-  location.reload();
-}
-
-/* ============================================================
-   SHOW APP
-============================================================ */
-function showApp() {
-  document.getElementById('authPage').classList.add('hidden');
-  document.getElementById('appPage').classList.remove('hidden');
-  const s = getSession();
-  document.getElementById('roleLabel').innerText   = s.role === 'admin' ? 'Admin Panel' : 'Employee Panel';
-  document.getElementById('welcomeLabel').innerText = `👋 Hi, ${s.username}`;
-
-  if (s.role === 'admin') {
-    document.getElementById('adminDashboard').classList.remove('hidden');
-    renderAdmin();
-  } else {
-    document.getElementById('userDashboard').classList.remove('hidden');
-    renderUser();
-  }
-}
-
-/* ============================================================
-   TIME CALCULATION
-============================================================ */
-function calcHoursAndPay(rec) {
-  if (!rec.clockIn || !rec.clockOut) return { hours: '0.00', paidHours: '0.00', pay: '0.00' };
-
-  const totalMs = new Date(rec.clockOut) - new Date(rec.clockIn);
-
-  let breakMs = 0;
-  if (rec.breakStart && rec.breakEnd) {
-    breakMs = new Date(rec.breakEnd) - new Date(rec.breakStart);
-    if (breakMs < 0) breakMs = 0;
-  } else {
-    // Only auto-deduct if there's no break recorded at all and shift is long enough
-    const totalHrsRaw = totalMs / 3600000;
-    if (totalHrsRaw > 6) {
-      breakMs = BREAK_DEDUCT * 3600 * 1000;
-    }
-  }
-
-  let workedMs = totalMs - breakMs;
-  if (workedMs < 0) workedMs = 0;
-
-  const hours     = workedMs / 3600000;
-  const paidHours = Math.min(hours, PAID_HOURS_CAP);
-  const pay       = paidHours * RATE;
-
-  return {
-    hours:     hours.toFixed(2),
-    paidHours: paidHours.toFixed(2),
-    pay:       pay.toFixed(2)
-  };
-}
-
-function fmt(d) {
-  if (!d) return '—';
-  return new Date(d).toLocaleString('en-US', {
-    month: 'short', day: '2-digit', year: 'numeric',
-    hour: '2-digit', minute: '2-digit', hour12: true
-  });
-}
-
-function toLocalInput(iso) {
-  if (!iso) return '';
-  const d = new Date(iso);
-  // format for datetime-local input: YYYY-MM-DDTHH:MM
-  const pad = n => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
-/* ============================================================
-   USER — CLOCK ACTIONS
-============================================================ */
-function getTodayRecord() {
-  const s     = getSession();
-  const today = new Date().toISOString().split('T')[0];
-  return getRecords().find(r => r.username === s.username && r.date === today) || null;
-}
-
-function updateTodayRecord(fn) {
-  const s       = getSession();
-  const today   = new Date().toISOString().split('T')[0];
-  const records = getRecords();
-  let rec = records.find(r => r.username === s.username && r.date === today);
-  if (!rec) {
-    rec = { id: Date.now(), username: s.username, date: today };
-    records.push(rec);
-  }
-  fn(rec);
-  setRecords(records);
-  renderUser();
-}
-
-function clockIn() {
-  const today = getTodayRecord();
-  if (today && today.clockIn) { alert('You already clocked in today.'); return; }
-  updateTodayRecord(rec => { rec.clockIn = new Date().toISOString(); });
-}
-
-function startBreak() {
-  const today = getTodayRecord();
-  if (!today || !today.clockIn)  { alert('Please clock in first.'); return; }
-  if (today.clockOut)            { alert('Your shift is already over.'); return; }
-  if (today.breakStart)          { alert('Break already started.'); return; }
-  updateTodayRecord(rec => { rec.breakStart = new Date().toISOString(); });
-}
-
-function endBreak() {
-  const today = getTodayRecord();
-  if (!today || !today.breakStart) { alert('Start a break first.'); return; }
-  if (today.breakEnd)              { alert('Break already ended.'); return; }
-  updateTodayRecord(rec => { rec.breakEnd = new Date().toISOString(); });
-}
-
-function clockOut() {
-  const today = getTodayRecord();
-  if (!today || !today.clockIn) { alert('Please clock in first.'); return; }
-  if (today.clockOut)           { alert('You already clocked out today.'); return; }
-  updateTodayRecord(rec => { rec.clockOut = new Date().toISOString(); });
-}
-
-/* ============================================================
-   USER — RENDER
-============================================================ */
-function renderUser() {
-  const s       = getSession();
-  const records = getRecords()
-    .filter(r => r.username === s.username)
-    .sort((a, b) => b.date.localeCompare(a.date));
-
-  const today = getTodayRecord();
-
-  // ---- Status bar & button states ----
-  let status = '🔵 Not clocked in today.';
-  let ci = false, sb = false, eb = false, co = false;
-
-  if (today) {
-    if (today.clockOut) {
-      status = `✅ Shift complete — clocked out at ${fmt(today.clockOut)}`;
-    } else if (today.breakEnd) {
-      status = `▶ Back from break since ${fmt(today.breakEnd)}`;
-      co = true;
-    } else if (today.breakStart) {
-      status = `⏸ On break since ${fmt(today.breakStart)}`;
-      eb = true;
-    } else if (today.clockIn) {
-      status = `🟢 Clocked in at ${fmt(today.clockIn)}`;
-      sb = true; co = true;
-    }
-  } else {
-    ci = true;
-  }
-
-  document.getElementById('clockStatus').innerText = status;
-  document.getElementById('btnClockIn').disabled    = !ci;
-  document.getElementById('btnStartBreak').disabled = !sb;
-  document.getElementById('btnEndBreak').disabled   = !eb;
-  document.getElementById('btnClockOut').disabled   = !co;
-
-  // ---- Summary ----
-  let totalH = 0, totalP = 0;
-  records.forEach(r => {
-    const c = calcHoursAndPay(r);
-    totalH += parseFloat(c.paidHours);
-    totalP += parseFloat(c.pay);
-  });
-  document.getElementById('uDays').innerText  = records.length;
-  document.getElementById('uHours').innerText = totalH.toFixed(2);
-  document.getElementById('uPay').innerText   = '$' + totalP.toFixed(2);
-
-  // ---- Table ----
-  let html = `
-    <table>
-      <tr>
-        <th>Date</th>
-        <th>Clock In</th>
-        <th>Break Start</th>
-        <th>Break End</th>
-        <th>Clock Out</th>
-        <th>Paid Hrs</th>
-        <th>Pay</th>
-      </tr>`;
-
-  if (records.length === 0) {
-    html += '<tr><td colspan="7" style="color:#888;padding:20px;">No records yet. Clock in to get started!</td></tr>';
-  } else {
-    records.forEach(r => {
-      const c = calcHoursAndPay(r);
-      html += `<tr>
-        <td><strong>${r.date}</strong></td>
-        <td>${fmt(r.clockIn)}</td>
-        <td>${fmt(r.breakStart)}</td>
-        <td>${fmt(r.breakEnd)}</td>
-        <td>${fmt(r.clockOut)}</td>
-        <td>${r.clockOut ? c.paidHours : '—'}</td>
-        <td>${r.clockOut ? '$' + c.pay : '—'}</td>
-      </tr>`;
-    });
-  }
-  html += '</table>';
-  document.getElementById('userRecords').innerHTML = html;
-}
-
-/* ============================================================
-   ADMIN — RENDER
-============================================================ */
-function renderAdmin() {
-  const users   = getUsers();
-  const records = getRecords();
-
-  // Overview stats
-  let totalH = 0, totalP = 0;
-  records.forEach(r => {
-    const c = calcHoursAndPay(r);
-    totalH += parseFloat(c.paidHours);
-    totalP += parseFloat(c.pay);
-  });
-  document.getElementById('aUsers').innerText   = users.length;
-  document.getElementById('aRecords').innerText = records.length;
-  document.getElementById('aHours').innerText   = totalH.toFixed(2);
-  document.getElementById('aPay').innerText     = '$' + totalP.toFixed(2);
-
-  // User list table
-  let uHtml = `
-    <table>
-      <tr><th>Username</th><th>Role</th><th>Password</th><th>Records</th><th>Actions</th></tr>`;
-  users.forEach(u => {
-    const recCount = records.filter(r => r.username === u.username).length;
-    uHtml += `<tr>
-      <td><strong>${u.username}</strong></td>
-      <td>${u.role === 'admin' ? '🔑 Admin' : '👤 User'}</td>
-      <td style="font-family:monospace;color:#888;">${u.password}</td>
-      <td>${recCount}</td>
-      <td class="actions">
-        ${u.username !== 'admin'
-          ? `<button class="primary danger" onclick="deleteUser('${u.username}')">🗑 Delete</button>`
-          : '<em style="color:#999;">protected</em>'}
-      </td>
-    </tr>`;
-  });
-  uHtml += '</table>';
-  document.getElementById('userList').innerHTML = uHtml;
-
-  // Repopulate filter dropdown (keep selection)
-  const filter  = document.getElementById('filterUser');
-  const current = filter.value;
-  filter.innerHTML = '<option value="">All Users</option>' +
-    users.map(u => `<option value="${u.username}">${u.username}</option>`).join('');
-  if ([...filter.options].some(o => o.value === current)) filter.value = current;
-
-  renderAdminRecords();
-}
-
-function renderAdminRecords() {
-  const filterVal = document.getElementById('filterUser').value;
-  let records = getRecords().sort((a, b) => b.date.localeCompare(a.date));
-  if (filterVal) records = records.filter(r => r.username === filterVal);
-
-  let html = `
-    <table>
-      <tr>
-        <th>User</th>
-        <th>Date</th>
-        <th>Clock In</th>
-        <th>Break Start</th>
-        <th>Break End</th>
-        <th>Clock Out</th>
-        <th>Paid Hrs</th>
-        <th>Pay</th>
-        <th>Actions</th>
-      </tr>`;
-
-  if (records.length === 0) {
-    html += `<tr><td colspan="9" style="color:#888;padding:20px;">No records found.</td></tr>`;
-  } else {
-    records.forEach(r => {
-      const c = calcHoursAndPay(r);
-      html += `<tr>
-        <td><strong>${r.username}</strong></td>
-        <td>${r.date}</td>
-        <td>${fmt(r.clockIn)}</td>
-        <td>${fmt(r.breakStart)}</td>
-        <td>${fmt(r.breakEnd)}</td>
-        <td>${fmt(r.clockOut)}</td>
-        <td>${r.clockOut ? c.paidHours : '—'}</td>
-        <td>${r.clockOut ? '$' + c.pay : '—'}</td>
-        <td class="actions">
-          <button class="primary warn"   onclick="openEditModal(${r.id})">✏️ Edit</button>
-          <button class="primary danger" onclick="deleteRecord(${r.id})">🗑 Del</button>
-        </td>
-      </tr>`;
-    });
-  }
-  html += '</table>';
-  document.getElementById('adminRecords').innerHTML = html;
-}
-
-/* ============================================================
-   ADMIN — USER MANAGEMENT
-============================================================ */
-function addUser() {
-  const u = document.getElementById('newUserName').value.trim();
-  const p = document.getElementById('newUserPass').value.trim();
-  const r = document.getElementById('newUserRole').value;
-
-  if (!u || !p) { alert('Please fill in username and password.'); return; }
-
-  const users = getUsers();
-  if (users.find(x => x.username === u)) { alert('Username already taken.'); return; }
-
-  users.push({ username: u, password: p, role: r });
-  setUsers(users);
-  document.getElementById('newUserName').value = '';
-  document.getElementById('newUserPass').value = '';
-  renderAdmin();
-}
-
-function deleteUser(username) {
-  if (!confirm(`Delete user "${username}" and ALL their DTR records? This cannot be undone.`)) return;
-  setUsers(getUsers().filter(u => u.username !== username));
-  setRecords(getRecords().filter(r => r.username !== username));
-  renderAdmin();
-}
-
-function deleteRecord(id) {
-  if (!confirm('Delete this DTR record? This cannot be undone.')) return;
-  setRecords(getRecords().filter(r => r.id !== id));
-  renderAdmin();
-}
-
-/* ============================================================
-   ADMIN — EDIT MODAL
-============================================================ */
-function openEditModal(id) {
-  const rec = getRecords().find(r => r.id === id);
-  if (!rec) return;
-
-  document.getElementById('editId').value         = id;
-  document.getElementById('editClockIn').value    = toLocalInput(rec.clockIn)    || '';
-  document.getElementById('editBreakStart').value = toLocalInput(rec.breakStart) || '';
-  document.getElementById('editBreakEnd').value   = toLocalInput(rec.breakEnd)   || '';
-  document.getElementById('editClockOut').value   = toLocalInput(rec.clockOut)   || '';
-
-  document.getElementById('editModal').classList.remove('hidden');
-}
-
-function closeModal() {
-  document.getElementById('editModal').classList.add('hidden');
-}
-
-function saveEdit() {
-  const id      = parseInt(document.getElementById('editId').value);
-  const records = getRecords();
-  const rec     = records.find(r => r.id === id);
-  if (!rec) { closeModal(); return; }
-
-  function readField(fieldId) {
-    const val = document.getElementById(fieldId).value;
-    return val ? new Date(val).toISOString() : null;
-  }
-
-  const newClockIn    = readField('editClockIn');
-  const newBreakStart = readField('editBreakStart');
-  const newBreakEnd   = readField('editBreakEnd');
-  const newClockOut   = readField('editClockOut');
-
-  if (!newClockIn) { alert('Clock In is required.'); return; }
-
-  rec.clockIn = newClockIn;
-
-  if (newBreakStart) rec.breakStart = newBreakStart; else delete rec.breakStart;
-  if (newBreakEnd)   rec.breakEnd   = newBreakEnd;   else delete rec.breakEnd;
-  if (newClockOut)   rec.clockOut   = newClockOut;   else delete rec.clockOut;
-
-  setRecords(records);
-  closeModal();
-  renderAdmin();
-}
-
-// Close modal on overlay click
-document.getElementById('editModal').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
-});
-</script>
 </body>
 </html>
